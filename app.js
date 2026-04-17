@@ -274,6 +274,8 @@ function render({ wx, marine }) {
   });
   const verdictEl = document.getElementById("verdict");
   verdictEl.dataset.level = walk.level;
+  const dogsEl = document.querySelector(".dogs");
+  if (dogsEl) dogsEl.dataset.mood = walk.level;
   document.getElementById("verdictEmoji").textContent = walk.emoji;
   document.getElementById("verdictScore").textContent = `${walk.score}/100 · ${walk.headline}`;
   document.getElementById("verdictSub").textContent =
