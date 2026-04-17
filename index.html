@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#7cc6e8" />
+<title>Beach Dog · Cromer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%90%B6%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="sun" aria-hidden="true"></div>
+      <div class="sea" aria-hidden="true">
+        <div class="wave wave-a"></div>
+        <div class="wave wave-b"></div>
+      </div>
+      <div class="dog" aria-hidden="true">🐕</div>
+      <h1>Beach Dog <span class="hero-sub">· Cromer</span></h1>
+      <p class="tagline">Should we walk the pup today?</p>
+    </header>
+
+    <section class="verdict" id="verdict" aria-live="polite">
+      <div class="verdict-emoji" id="verdictEmoji">🐾</div>
+      <div class="verdict-text">
+        <div class="verdict-score" id="verdictScore">Sniffing the breeze…</div>
+        <div class="verdict-sub" id="verdictSub">Loading conditions for Cromer beach</div>
+      </div>
+    </section>
+
+    <section class="factors" id="factors">
+      <article class="card" data-factor="weather">
+        <div class="card-icon">☁️</div>
+        <div class="card-label">Weather</div>
+        <div class="card-value" id="weatherValue">—</div>
+        <div class="card-meta" id="weatherMeta">—</div>
+      </article>
+      <article class="card" data-factor="temp">
+        <div class="card-icon">🌡️</div>
+        <div class="card-label">Temperature</div>
+        <div class="card-value" id="tempValue">—</div>
+        <div class="card-meta" id="tempMeta">feels like —</div>
+      </article>
+      <article class="card" data-factor="wind">
+        <div class="card-icon">💨</div>
+        <div class="card-label">Wind</div>
+        <div class="card-value" id="windValue">—</div>
+        <div class="card-meta" id="windMeta">—</div>
+      </article>
+      <article class="card" data-factor="tide">
+        <div class="card-icon">🌊</div>
+        <div class="card-label">Tide</div>
+        <div class="card-value" id="tideValue">—</div>
+        <div class="card-meta" id="tideMeta">—</div>
+      </article>
+      <article class="card" data-factor="busy">
+        <div class="card-icon">👣</div>
+        <div class="card-label">Busyness</div>
+        <div class="card-value" id="busyValue">—</div>
+        <div class="card-meta" id="busyMeta">—</div>
+      </article>
+    </section>
+
+    <footer class="foot">
+      <div id="updated">—</div>
+      <div class="credits">Weather & marine data: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
