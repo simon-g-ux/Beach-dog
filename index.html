@@ -3,127 +3,76 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="theme-color" content="#7cc6e8" />
+<meta name="theme-color" content="#eef1f6" />
 <title>Beach Dog · Cromer</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%90%B6%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="page">
-    <header class="hero">
-      <div class="sun" aria-hidden="true"></div>
-      <div class="sea" aria-hidden="true">
-        <div class="wave wave-a"></div>
-        <div class="wave wave-b"></div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-text">
+          <div class="brand-name">Beach Dog</div>
+          <div class="brand-sub">Cromer</div>
+        </div>
       </div>
-      <svg class="dogs" data-mood="ok" viewBox="0 0 420 140" aria-hidden="true">
-        <defs>
-          <filter id="sketchy" x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="2" seed="3" result="n"/>
-            <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/>
-          </filter>
-        </defs>
-
-        <!-- Sweep: big grey whippet -->
-        <g id="sweep" filter="url(#sketchy)">
-          <g class="tail"><path d="M198 66 Q222 46 224 22" stroke="#2a2a2a" stroke-width="3.5" fill="none" stroke-linecap="round"/></g>
-          <g class="body-parts">
-            <ellipse cx="140" cy="74" rx="60" ry="16" fill="#a9b0b5" stroke="#2a2a2a" stroke-width="2.5"/>
-            <path d="M105 86 Q130 96 160 86" stroke="#2a2a2a" stroke-width="2" fill="none"/>
-            <path d="M82 76 L92 60 L108 60 L102 82 Z" fill="#a9b0b5" stroke="#2a2a2a" stroke-width="2.2"/>
-            <ellipse cx="68" cy="62" rx="22" ry="8" fill="#a9b0b5" stroke="#2a2a2a" stroke-width="2.5" transform="rotate(-6 68 62)"/>
-            <path d="M76 56 Q82 48 88 53 Q84 60 78 60 Z" fill="#868c90" stroke="#2a2a2a" stroke-width="2"/>
-            <path d="M60 61 Q64 64 68 61" stroke="#2a2a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-            <circle cx="48" cy="64" r="2" fill="#2a2a2a"/>
-            <path d="M86 70 Q90 78 94 70" stroke="#ff7ea8" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-          </g>
-          <g class="legs">
-            <line x1="105" y1="87" x2="103" y2="118" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round"/>
-            <line x1="116" y1="87" x2="114" y2="118" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round"/>
-            <line x1="176" y1="86" x2="179" y2="118" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round"/>
-            <line x1="187" y1="86" x2="190" y2="118" stroke="#2a2a2a" stroke-width="3" stroke-linecap="round"/>
-          </g>
-        </g>
-
-        <!-- Buffy: smaller, mostly white with black head & flash -->
-        <g id="buffy" filter="url(#sketchy)" transform="translate(230 48) scale(0.55)">
-          <g class="tail"><path d="M198 66 Q220 58 220 38" stroke="#2a2a2a" stroke-width="5" fill="none" stroke-linecap="round"/></g>
-          <g class="body-parts">
-            <ellipse cx="140" cy="74" rx="60" ry="16" fill="#ffffff" stroke="#2a2a2a" stroke-width="4"/>
-            <path d="M105 86 Q130 96 160 86" stroke="#2a2a2a" stroke-width="3" fill="none"/>
-            <path d="M82 76 L92 60 L108 60 L102 82 Z" fill="#1a1a1a" stroke="#2a2a2a" stroke-width="3"/>
-            <ellipse cx="68" cy="62" rx="22" ry="8" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="3" transform="rotate(-6 68 62)"/>
-            <!-- white muzzle flash -->
-            <path d="M46 64 Q58 60 66 65 L66 68 Q58 72 46 68 Z" fill="#ffffff" stroke="none"/>
-            <path d="M76 56 Q82 48 88 53 Q84 60 78 60 Z" fill="#0a0a0a" stroke="#2a2a2a" stroke-width="3"/>
-            <path d="M60 61 Q64 64 68 61" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-            <circle cx="46" cy="65" r="2.5" fill="#2a2a2a"/>
-            <path d="M86 70 Q90 78 94 70" stroke="#ff7ea8" stroke-width="6.5" fill="none" stroke-linecap="round"/>
-          </g>
-          <g class="legs">
-            <line x1="105" y1="87" x2="103" y2="118" stroke="#2a2a2a" stroke-width="5" stroke-linecap="round"/>
-            <line x1="116" y1="87" x2="114" y2="118" stroke="#2a2a2a" stroke-width="5" stroke-linecap="round"/>
-            <line x1="176" y1="86" x2="179" y2="118" stroke="#2a2a2a" stroke-width="5" stroke-linecap="round"/>
-            <line x1="187" y1="86" x2="190" y2="118" stroke="#2a2a2a" stroke-width="5" stroke-linecap="round"/>
-          </g>
-        </g>
-      </svg>
-      <h1>Beach Dog <span class="hero-sub">· Cromer</span></h1>
-      <p class="tagline">Should we walk the pup today?</p>
+      <div class="topbar-meta" id="updated">—</div>
     </header>
 
-    <section class="verdict" id="verdict" aria-live="polite">
-      <div class="verdict-emoji" id="verdictEmoji">🐾</div>
-      <div class="verdict-text">
-        <div class="verdict-score" id="verdictScore">Sniffing the breeze…</div>
+    <section class="verdict-hero" id="verdict" data-level="ok" aria-live="polite">
+      <div class="score">
+        <span class="score-num" id="verdictScore">—</span>
+        <span class="score-den">/ 100</span>
+      </div>
+      <div class="verdict-copy">
+        <div class="verdict-headline" id="verdictHeadline">Sniffing the breeze…</div>
         <div class="verdict-sub" id="verdictSub">Loading conditions for Cromer beach</div>
       </div>
     </section>
 
     <section class="factors" id="factors">
       <article class="card" data-factor="weather">
-        <div class="card-icon">☁️</div>
         <div class="card-label">Weather</div>
         <div class="card-value" id="weatherValue">—</div>
         <div class="card-meta" id="weatherMeta">—</div>
       </article>
       <article class="card" data-factor="temp">
-        <div class="card-icon">🌡️</div>
         <div class="card-label">Temperature</div>
         <div class="card-value" id="tempValue">—</div>
         <div class="card-meta" id="tempMeta">feels like —</div>
       </article>
       <article class="card" data-factor="wind">
-        <div class="card-icon">💨</div>
         <div class="card-label">Wind</div>
         <div class="card-value" id="windValue">—</div>
         <div class="card-meta" id="windMeta">—</div>
       </article>
       <article class="card" data-factor="tide">
-        <div class="card-icon">🌊</div>
         <div class="card-label">Tide</div>
         <div class="card-value" id="tideValue">—</div>
         <div class="card-meta" id="tideMeta">—</div>
       </article>
       <article class="card" data-factor="busy">
-        <div class="card-icon">👣</div>
         <div class="card-label">Busyness</div>
         <div class="card-value" id="busyValue">—</div>
         <div class="card-meta" id="busyMeta">—</div>
       </article>
     </section>
 
-    <section class="tide-panel card" aria-labelledby="tidePanelTitle">
+    <section class="tide-panel" aria-labelledby="tidePanelTitle">
       <div class="tide-panel-head">
-        <div class="card-label" id="tidePanelTitle">Tide · next 18 hours</div>
+        <div class="tide-panel-title" id="tidePanelTitle">Tide · next 18 hours</div>
         <div class="tide-panel-sub" id="tidePanelSub">—</div>
       </div>
       <div class="tide-chart" id="tideChart" aria-hidden="true"></div>
     </section>
 
     <footer class="foot">
-      <div id="updated">—</div>
-      <div class="credits">Weather & marine data: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></div>
+      <div class="credits">Data from <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></div>
     </footer>
   </main>
 

@@ -109,7 +109,7 @@ function renderTideChart(marine, tideEvents, now) {
   }
   if (pts.length < 2) { host.innerHTML = ""; return; }
 
-  const W = 720, H = 150, PAD_X = 28, PAD_T = 24, PAD_B = 28;
+  const W = 720, H = 170, PAD_X = 28, PAD_T = 36, PAD_B = 32;
 
   const hMin = Math.min(...pts.map(p => p.h), 0) - 0.25;
   const hMax = Math.max(...pts.map(p => p.h), 0) + 0.25;
@@ -117,12 +117,40 @@ function renderTideChart(marine, tideEvents, now) {
   const xOf = t => PAD_X + ((t - startMs) / (endMs - startMs)) * (W - 2 * PAD_X);
   const yOf = h => PAD_T + (1 - (h - hMin) / (hMax - hMin)) * (H - PAD_T - PAD_B);
 
-  const lineD = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${xOf(p.t).toFixed(1)} ${yOf(p.h).toFixed(1)}`).join(" ");
+  // Smoothed cubic-Bezier path through the hourly points (cardinal spline).
+  const xy = pts.map(p => [xOf(p.t), yOf(p.h)]);
+  const tension = 0.22;
+  let lineD = `M ${xy[0][0].toFixed(1)} ${xy[0][1].toFixed(1)}`;
+  for (let i = 0; i < xy.length - 1; i++) {
+    const p0 = xy[Math.max(0, i - 1)];
+    const p1 = xy[i];
+    const p2 = xy[i + 1];
+    const p3 = xy[Math.min(xy.length - 1, i + 2)];
+    const c1x = p1[0] + (p2[0] - p0[0]) * tension;
+    const c1y = p1[1] + (p2[1] - p0[1]) * tension;
+    const c2x = p2[0] - (p3[0] - p1[0]) * tension;
+    const c2y = p2[1] - (p3[1] - p1[1]) * tension;
+    lineD += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+
   const baseY = yOf(hMin);
-  const areaD = `${lineD} L ${xOf(pts[pts.length-1].t).toFixed(1)} ${baseY.toFixed(1)} L ${xOf(pts[0].t).toFixed(1)} ${baseY.toFixed(1)} Z`;
+  const areaD = `${lineD} L ${xy[xy.length-1][0].toFixed(1)} ${baseY.toFixed(1)} L ${xy[0][0].toFixed(1)} ${baseY.toFixed(1)} Z`;
 
   const mslY = yOf(0);
   const nowX = xOf(now.getTime());
+
+  // Dot grid across the plot area.
+  const dotRows = 5, dotCols = 28;
+  const plotLeft = PAD_X, plotRight = W - PAD_X;
+  const plotTop = PAD_T, plotBottom = H - PAD_B;
+  let dotsSVG = "";
+  for (let r = 0; r <= dotRows; r++) {
+    for (let c = 0; c <= dotCols; c++) {
+      const dx = plotLeft + (c / dotCols) * (plotRight - plotLeft);
+      const dy = plotTop + (r / dotRows) * (plotBottom - plotTop);
+      dotsSVG += `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="0.9" fill="rgba(15,23,42,0.10)"/>`;
+    }
+  }
 
   // Hour-tick labels at 03/06/09/12/15/18/21/00 boundaries within the window.
   const tickEls = [];
@@ -132,30 +160,43 @@ function renderTideChart(marine, tideEvents, now) {
   for (let t = firstTick.getTime(); t <= endMs; t += 3 * 3600e3) {
     const x = xOf(t);
     const label = new Date(t).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-    tickEls.push(`<text x="${x.toFixed(1)}" y="${H - 8}" text-anchor="middle">${label}</text>`);
-    tickEls.push(`<line x1="${x.toFixed(1)}" y1="${(H - PAD_B).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(H - PAD_B + 3).toFixed(1)}" stroke="#cdd8e0" stroke-width="1"/>`);
+    tickEls.push(`<text class="tick-text" x="${x.toFixed(1)}" y="${H - 10}" text-anchor="middle">${label}</text>`);
   }
 
-  // Next-high and next-low markers within the visible window.
+  // Pill-chip labels at next high / next low.
   const peakEls = [];
   for (const ev of [tideEvents.nextHigh, tideEvents.nextLow]) {
     if (!ev) continue;
     const tms = ev.time.getTime();
     if (tms < startMs || tms > endMs) continue;
     const x = xOf(tms), y = yOf(ev.height);
-    const label = `${ev.kind === "high" ? "▲" : "▼"} ${fmtTime(ev.time)} · ${ev.height.toFixed(1)}m`;
-    const ty = ev.kind === "high" ? y - 8 : y + 16;
-    peakEls.push(`<circle class="tide-mark" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5"/>`);
-    peakEls.push(`<text class="peak" x="${x.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle">${label}</text>`);
+    const label = `${ev.kind === "high" ? "High" : "Low"} ${fmtTime(ev.time)} · ${ev.height.toFixed(1)}m`;
+    const chipW = label.length * 6.2 + 18;
+    const chipH = 20;
+    let chipX = x - chipW / 2;
+    let chipY = ev.kind === "high" ? y - chipH - 8 : y + 10;
+    // Keep chip inside the plot area horizontally.
+    if (chipX < 4) chipX = 4;
+    if (chipX + chipW > W - 4) chipX = W - 4 - chipW;
+    peakEls.push(`<circle class="peak-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5"/>`);
+    peakEls.push(`<rect class="chip-bg" x="${chipX.toFixed(1)}" y="${chipY.toFixed(1)}" width="${chipW.toFixed(1)}" height="${chipH}" rx="10" ry="10"/>`);
+    peakEls.push(`<text class="chip-text" x="${(chipX + chipW/2).toFixed(1)}" y="${(chipY + 13).toFixed(1)}" text-anchor="middle">${label}</text>`);
   }
 
   host.innerHTML = `
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tide height over next 18 hours">
+      <defs>
+        <linearGradient id="tideFillGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.30"/>
+          <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${dotsSVG}
       <line class="tide-msl" x1="${PAD_X}" y1="${mslY.toFixed(1)}" x2="${W - PAD_X}" y2="${mslY.toFixed(1)}"/>
-      <path class="tide-fill" d="${areaD}"/>
+      <path d="${areaD}" fill="url(#tideFillGrad)"/>
       <path class="tide-line" d="${lineD}"/>
-      <line class="tide-now" x1="${nowX.toFixed(1)}" y1="${PAD_T - 4}" x2="${nowX.toFixed(1)}" y2="${(H - PAD_B).toFixed(1)}"/>
-      <text class="now" x="${nowX.toFixed(1)}" y="${(PAD_T - 8).toFixed(1)}" text-anchor="middle">now</text>
+      <line class="tide-now-line" x1="${nowX.toFixed(1)}" y1="${(PAD_T - 16).toFixed(1)}" x2="${nowX.toFixed(1)}" y2="${(H - PAD_B).toFixed(1)}"/>
+      <text class="now-text" x="${nowX.toFixed(1)}" y="${(PAD_T - 20).toFixed(1)}" text-anchor="middle">now</text>
       ${tickEls.join("")}
       ${peakEls.join("")}
     </svg>
@@ -368,7 +409,7 @@ function render({ wx, marine }) {
   document.getElementById("busyMeta").textContent =
     bits.length ? `probably ${busy.label.toLowerCase()} · ${bits.join(" + ")}` : `a guess based on time & weather`;
 
-  // Per-card tone
+  // Per-card tone (kept on data attributes for future styling; no visuals yet)
   setCardTone("weather", toneFromScore(100 - (c.precipitation * 20), 90, 60));
   setCardTone("temp",    toneFromScore(100 - Math.abs(c.temperature_2m - 14) * 4, 85, 55));
   setCardTone("wind",    toneFromScore(100 - c.wind_gusts_10m * 1.8, 80, 55));
@@ -389,10 +430,8 @@ function render({ wx, marine }) {
   });
   const verdictEl = document.getElementById("verdict");
   verdictEl.dataset.level = walk.level;
-  const dogsEl = document.querySelector(".dogs");
-  if (dogsEl) dogsEl.dataset.mood = walk.level === "meh" ? "ok" : walk.level;
-  document.getElementById("verdictEmoji").textContent = walk.emoji;
-  document.getElementById("verdictScore").textContent = `${walk.score}/100 · ${walk.headline}`;
+  document.getElementById("verdictScore").textContent = walk.score;
+  document.getElementById("verdictHeadline").textContent = walk.headline;
   document.getElementById("verdictSub").textContent =
     walk.reasons.length ? `Watch out for: ${walk.reasons.slice(0, 3).join(", ")}.` : `Nothing to watch out for — off you trot.`;
 
@@ -415,8 +454,8 @@ function nextHourValue(times, values, now) {
 
 function renderError(err) {
   document.body.dataset.state = "error";
-  document.getElementById("verdictEmoji").textContent = "😿";
-  document.getElementById("verdictScore").textContent = "Couldn't fetch conditions";
+  document.getElementById("verdictScore").textContent = "—";
+  document.getElementById("verdictHeadline").textContent = "Couldn't fetch conditions";
   document.getElementById("verdictSub").textContent = err.message;
 }
 
