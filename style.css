@@ -9,6 +9,7 @@
   --ink-soft: #4a6473;
   --good: #3fbf7f;
   --ok: #f2b845;
+  --meh: #ec8f4c;
   --bad: #e5694a;
   --card: #ffffff;
   --shadow: 0 6px 22px rgba(17, 48, 68, 0.08);
@@ -223,6 +224,7 @@ html, body {
 
 .verdict[data-level="good"] { border-left-color: var(--good); }
 .verdict[data-level="ok"]   { border-left-color: var(--ok); }
+.verdict[data-level="meh"]  { border-left-color: var(--meh); }
 .verdict[data-level="bad"]  { border-left-color: var(--bad); }
 
 .verdict-emoji {

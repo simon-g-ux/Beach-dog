@@ -142,12 +142,20 @@ function isSchoolHoliday(d) {
   return false;
 }
 
-// Cromer faces the North Sea to the north; a wind with direction in roughly
-// [315°, 90°] is blowing off the sea onto the beach, which is the nasty one.
-function isOnshoreAtCromer(deg) {
-  if (deg == null) return false;
-  const d = ((deg % 360) + 360) % 360;
-  return d >= 315 || d <= 90;
+// Wind-comfort multipliers for each of the 16 compass points, as experienced
+// at Cromer beach. S is sheltered (offshore from warm Norfolk), E and SSW are
+// decent, SW/SE third best, and N/NNE/NNW etc. are the North-Sea blast zone.
+const CROMER_WIND_MUL = {
+  N:   1.8, NNE: 1.6, NE:  1.5, ENE: 1.3,
+  E:   0.5, ESE: 0.7, SE:  0.8, SSE: 0.5,
+  S:   0.3, SSW: 0.5, SW:  0.8, WSW: 1.0,
+  W:   1.3, WNW: 1.5, NW:  1.6, NNW: 1.7,
+};
+
+function windMultiplierAtCromer(deg) {
+  if (deg == null) return 1;
+  const mul = CROMER_WIND_MUL[bearingToCompass(deg)];
+  return mul == null ? 1 : mul;
 }
 
 // ---------- Walk score ----------
@@ -166,14 +174,13 @@ function computeWalkScore({ tempC, feelsC, windMph, gustMph, windDirDeg, precip,
   if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) { score -= 20; reasons.push("snowy"); }
   if ([45, 48].includes(weatherCode)) { score -= 10; reasons.push("foggy"); }
 
-  // Wind — North-Sea onshore amplifies everything at Cromer.
-  const onshore = isOnshoreAtCromer(windDirDeg);
-  const windMul = onshore ? 1.5 : 1;
-  const windLabel = onshore ? " off the sea" : "";
+  // Wind — Cromer direction sensitivity: S sheltered, N/NW/NE North-Sea blast.
+  const windMul = windMultiplierAtCromer(windDirDeg);
+  const windLabel = windMul >= 1.5 ? " off the sea" : windMul <= 0.6 ? " (sheltered)" : "";
   if (gustMph >= 40)      { score -= Math.round(35 * windMul); reasons.push(`gale${windLabel}`); }
   else if (gustMph >= 25) { score -= Math.round(18 * windMul); reasons.push(`stiff gusts${windLabel}`); }
   else if (gustMph >= 18) { score -= Math.round(9 * windMul);  reasons.push(`breezy${windLabel}`); }
-  else if (windMph >= 14 && onshore) { score -= 5; reasons.push("nippy sea breeze"); }
+  else if (windMph >= 14 && windMul >= 1.3) { score -= 5; reasons.push("nippy sea breeze"); }
 
   // Temperature — feels-like for pup (and owner) comfort; actual for hot-paws.
   const feels = feelsC != null ? feelsC : tempC;
@@ -197,8 +204,9 @@ function computeWalkScore({ tempC, feelsC, windMph, gustMph, windDirDeg, precip,
 
   let level, emoji, headline;
   if (score >= 75)      { level = "good"; emoji = "🐕"; headline = "Leads on — perfect beach-dog weather"; }
-  else if (score >= 50) { level = "ok";   emoji = "🐾"; headline = "Decent — grab a coat and go"; }
-  else                  { level = "bad";  emoji = "🛋️"; headline = "Maybe a short one (or stay in)"; }
+  else if (score >= 55) { level = "ok";   emoji = "🐾"; headline = "Decent — grab a coat and go"; }
+  else if (score >= 35) { level = "meh";  emoji = "🐾"; headline = "Only if they really need it"; }
+  else                  { level = "bad";  emoji = "🛋️"; headline = "Stay in — proper nasty out there"; }
 
   return { score, level, emoji, headline, reasons };
 }
@@ -292,7 +300,7 @@ function render({ wx, marine }) {
   const verdictEl = document.getElementById("verdict");
   verdictEl.dataset.level = walk.level;
   const dogsEl = document.querySelector(".dogs");
-  if (dogsEl) dogsEl.dataset.mood = walk.level;
+  if (dogsEl) dogsEl.dataset.mood = walk.level === "meh" ? "ok" : walk.level;
   document.getElementById("verdictEmoji").textContent = walk.emoji;
   document.getElementById("verdictScore").textContent = `${walk.score}/100 · ${walk.headline}`;
   document.getElementById("verdictSub").textContent =
