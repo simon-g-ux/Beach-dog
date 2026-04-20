@@ -40,11 +40,11 @@ html, body {
 
 body {
   position: relative;
-  background: linear-gradient(180deg, #eef1f6 0%, #e7ecf3 100%);
+  background: linear-gradient(180deg, #eef0f8 0%, #e4e8f3 100%);
   overflow-x: hidden;
 }
 
-/* Slow-drifting ambient colour blobs behind everything. */
+/* Slow-drifting ambient colour blobs behind everything — purple/blue palette. */
 body::before {
   content: "";
   position: fixed;
@@ -52,11 +52,12 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(closest-side at 85% 12%, rgba(253, 186, 116, 0.55), transparent 62%),
-    radial-gradient(closest-side at 6% 80%, rgba(125, 211, 252, 0.55), transparent 62%),
-    radial-gradient(closest-side at 55% 52%, rgba(196, 181, 253, 0.38), transparent 62%),
-    radial-gradient(closest-side at 92% 88%, rgba(251, 207, 232, 0.45), transparent 62%);
-  filter: blur(36px);
+    radial-gradient(closest-side at 85% 12%, rgba(165, 180, 252, 0.60), transparent 62%),   /* periwinkle */
+    radial-gradient(closest-side at 6% 80%,  rgba(125, 211, 252, 0.55), transparent 62%),   /* sky */
+    radial-gradient(closest-side at 55% 52%, rgba(196, 181, 253, 0.45), transparent 62%),   /* lavender */
+    radial-gradient(closest-side at 92% 88%, rgba(147, 197, 253, 0.48), transparent 62%),   /* soft blue */
+    radial-gradient(closest-side at 28% 18%, rgba(221, 214, 254, 0.40), transparent 62%);   /* pale violet */
+  filter: blur(38px);
   animation: float-bg 34s ease-in-out infinite alternate;
 }
 
@@ -163,13 +164,19 @@ body::after {
 /* ---------- Verdict hero ---------- */
 
 .verdict-hero {
-  --hero-blob-a: rgba(253, 224, 71, 0.70);
-  --hero-blob-b: rgba(252, 165, 165, 0.50);
+  --hero-blob-a: rgba(253, 224, 71, 0.85);
+  --hero-blob-b: rgba(252, 165, 165, 0.65);
+  --hero-glow:   rgba(251, 191, 36, 0.22);
   border-radius: var(--radius-lg);
-  padding: 32px 30px 28px;
+  padding: 36px 30px 32px;
   overflow: hidden;
-  box-shadow: var(--shadow-hero);
   isolation: isolate;
+  box-shadow:
+    var(--shadow-hero),
+    0 14px 44px var(--hero-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.70),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.4s ease;
 }
 
 .verdict-hero::before {
@@ -177,34 +184,36 @@ body::after {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: linear-gradient(135deg, var(--level-ok-a) 0%, var(--level-ok-b) 100%);
+  background:
+    radial-gradient(120% 90% at 18% 12%, rgba(255, 255, 255, 0.55) 0%, transparent 55%),
+    linear-gradient(135deg, var(--level-ok-a) 0%, var(--level-ok-b) 100%);
   transition: background 0.4s ease;
   pointer-events: none;
 }
 
-.verdict-hero[data-level="good"]::before { background: linear-gradient(135deg, var(--level-good-a) 0%, var(--level-good-b) 100%); }
-.verdict-hero[data-level="ok"]::before   { background: linear-gradient(135deg, var(--level-ok-a)   0%, var(--level-ok-b)   100%); }
-.verdict-hero[data-level="meh"]::before  { background: linear-gradient(135deg, var(--level-meh-a)  0%, var(--level-meh-b)  100%); }
-.verdict-hero[data-level="bad"]::before  { background: linear-gradient(135deg, var(--level-bad-a)  0%, var(--level-bad-b)  100%); }
+.verdict-hero[data-level="good"]::before { background: radial-gradient(120% 90% at 18% 12%, rgba(255,255,255,0.55) 0%, transparent 55%), linear-gradient(135deg, var(--level-good-a) 0%, var(--level-good-b) 100%); }
+.verdict-hero[data-level="ok"]::before   { background: radial-gradient(120% 90% at 18% 12%, rgba(255,255,255,0.55) 0%, transparent 55%), linear-gradient(135deg, var(--level-ok-a)   0%, var(--level-ok-b)   100%); }
+.verdict-hero[data-level="meh"]::before  { background: radial-gradient(120% 90% at 18% 12%, rgba(255,255,255,0.55) 0%, transparent 55%), linear-gradient(135deg, var(--level-meh-a)  0%, var(--level-meh-b)  100%); }
+.verdict-hero[data-level="bad"]::before  { background: radial-gradient(120% 90% at 18% 12%, rgba(255,255,255,0.55) 0%, transparent 55%), linear-gradient(135deg, var(--level-bad-a)  0%, var(--level-bad-b)  100%); }
 
-/* Two soft aurora blobs that drift inside the hero. */
+/* Two soft aurora blobs that drift inside the hero, stronger for depth. */
 .verdict-hero::after {
   content: "";
   position: absolute;
   inset: -30%;
   z-index: 0;
   background:
-    radial-gradient(closest-side at 22% 28%, var(--hero-blob-a) 0%, transparent 70%),
-    radial-gradient(closest-side at 82% 78%, var(--hero-blob-b) 0%, transparent 70%);
-  filter: blur(14px) saturate(140%);
+    radial-gradient(closest-side at 22% 28%, var(--hero-blob-a) 0%, transparent 65%),
+    radial-gradient(closest-side at 82% 78%, var(--hero-blob-b) 0%, transparent 65%);
+  filter: blur(18px) saturate(160%);
   pointer-events: none;
   animation: float-hero 22s ease-in-out infinite alternate;
 }
 
-.verdict-hero[data-level="good"] { --hero-blob-a: rgba(110, 231, 183, 0.75); --hero-blob-b: rgba(125, 211, 252, 0.55); }
-.verdict-hero[data-level="ok"]   { --hero-blob-a: rgba(253, 224, 71, 0.70);  --hero-blob-b: rgba(252, 165, 165, 0.50); }
-.verdict-hero[data-level="meh"]  { --hero-blob-a: rgba(251, 146, 60, 0.65);  --hero-blob-b: rgba(244, 114, 182, 0.45); }
-.verdict-hero[data-level="bad"]  { --hero-blob-a: rgba(248, 113, 113, 0.70); --hero-blob-b: rgba(217, 70, 239, 0.45); }
+.verdict-hero[data-level="good"] { --hero-blob-a: rgba(110, 231, 183, 0.85); --hero-blob-b: rgba(125, 211, 252, 0.65); --hero-glow: rgba(52, 211, 153, 0.22); }
+.verdict-hero[data-level="ok"]   { --hero-blob-a: rgba(253, 224, 71, 0.85);  --hero-blob-b: rgba(252, 165, 165, 0.65); --hero-glow: rgba(251, 191, 36, 0.22); }
+.verdict-hero[data-level="meh"]  { --hero-blob-a: rgba(251, 146, 60, 0.80);  --hero-blob-b: rgba(244, 114, 182, 0.60); --hero-glow: rgba(249, 115, 22, 0.24); }
+.verdict-hero[data-level="bad"]  { --hero-blob-a: rgba(248, 113, 113, 0.85); --hero-blob-b: rgba(217, 70, 239, 0.60); --hero-glow: rgba(239, 68, 68, 0.26); }
 
 .verdict-hero > * { position: relative; z-index: 1; }
 
