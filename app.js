@@ -142,14 +142,22 @@ function isSchoolHoliday(d) {
   return false;
 }
 
+// Cromer faces the North Sea to the north; a wind with direction in roughly
+// [315°, 90°] is blowing off the sea onto the beach, which is the nasty one.
+function isOnshoreAtCromer(deg) {
+  if (deg == null) return false;
+  const d = ((deg % 360) + 360) % 360;
+  return d >= 315 || d <= 90;
+}
+
 // ---------- Walk score ----------
 // Blends weather/wind/tide/temp into a 0–100 score with a friendly verdict.
-function computeWalkScore({ tempC, windMph, gustMph, precip, weatherCode, isDay, tide }) {
+function computeWalkScore({ tempC, feelsC, windMph, gustMph, windDirDeg, precip, weatherCode, isDay, tide }) {
   let score = 100;
   const reasons = [];
 
   // Precipitation — dogs don't mind drizzle, but heavy rain is a no.
-  if (precip >= 2)      { score -= 45; reasons.push("heavy rain"); }
+  if (precip >= 2)        { score -= 45; reasons.push("heavy rain"); }
   else if (precip >= 0.5) { score -= 20; reasons.push("rain"); }
   else if (precip > 0)    { score -= 8;  reasons.push("a spit of drizzle"); }
 
@@ -158,24 +166,31 @@ function computeWalkScore({ tempC, windMph, gustMph, precip, weatherCode, isDay,
   if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) { score -= 20; reasons.push("snowy"); }
   if ([45, 48].includes(weatherCode)) { score -= 10; reasons.push("foggy"); }
 
-  // Wind — north-sea gusts are the Cromer killer.
-  if (gustMph >= 45)      { score -= 35; reasons.push("gale-force gusts"); }
-  else if (gustMph >= 30) { score -= 18; reasons.push("stiff gusts"); }
-  else if (windMph >= 20) { score -= 8;  reasons.push("breezy"); }
+  // Wind — North-Sea onshore amplifies everything at Cromer.
+  const onshore = isOnshoreAtCromer(windDirDeg);
+  const windMul = onshore ? 1.5 : 1;
+  const windLabel = onshore ? " off the sea" : "";
+  if (gustMph >= 40)      { score -= Math.round(35 * windMul); reasons.push(`gale${windLabel}`); }
+  else if (gustMph >= 25) { score -= Math.round(18 * windMul); reasons.push(`stiff gusts${windLabel}`); }
+  else if (gustMph >= 18) { score -= Math.round(9 * windMul);  reasons.push(`breezy${windLabel}`); }
+  else if (windMph >= 14 && onshore) { score -= 5; reasons.push("nippy sea breeze"); }
 
-  // Temperature — paws & pup comfort.
-  if (tempC <= 0)      { score -= 15; reasons.push("freezing"); }
-  else if (tempC <= 4) { score -= 5;  reasons.push("nippy"); }
-  else if (tempC >= 28){ score -= 25; reasons.push("too hot for paws"); }
-  else if (tempC >= 24){ score -= 10; reasons.push("warm — bring water"); }
+  // Temperature — feels-like for pup (and owner) comfort; actual for hot-paws.
+  const feels = feelsC != null ? feelsC : tempC;
+  if (feels <= 0)       { score -= 22; reasons.push("feels freezing"); }
+  else if (feels <= 4)  { score -= 14; reasons.push("feels nippy"); }
+  else if (feels <= 8)  { score -= 6;  reasons.push("feels cool"); }
+  if (tempC >= 28)      { score -= 25; reasons.push("too hot for paws"); }
+  else if (tempC >= 24) { score -= 10; reasons.push("warm — bring water"); }
 
-  // Daylight bonus (walks are nicer in the light).
-  if (!isDay) score -= 5;
+  // Darkness — harder to see paws, dog-poo bags, and the tide line.
+  if (!isDay) { score -= 18; reasons.push("it's dark"); }
 
-  // Tide — at Cromer, low/falling tide exposes more sand for off-lead zoomies.
+  // Tide — at Cromer, spring high tide swallows most of the beach (MHWN ≈ 1.3m).
   if (tide) {
-    if (!tide.rising && tide.height < 0) { score += 8;  reasons.push("low tide — lots of sand"); }
-    else if (tide.rising && tide.height > 1) { score -= 6; reasons.push("high tide — less beach"); }
+    if (tide.height >= 1.3)       { score -= 14; reasons.push("high tide — little beach"); }
+    else if (tide.height >= 0.6)  { score -= 4; }
+    else if (tide.height <= -0.3) { score += 6;  reasons.push("low tide — loads of sand"); }
   }
 
   score = Math.max(0, Math.min(100, Math.round(score)));
@@ -265,8 +280,10 @@ function render({ wx, marine }) {
   // Verdict
   const walk = computeWalkScore({
     tempC: c.temperature_2m,
+    feelsC: c.apparent_temperature,
     windMph: c.wind_speed_10m,
     gustMph: c.wind_gusts_10m,
+    windDirDeg: c.wind_direction_10m,
     precip: c.precipitation,
     weatherCode,
     isDay: !!c.is_day,
