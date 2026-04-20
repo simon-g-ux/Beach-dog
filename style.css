@@ -15,14 +15,14 @@
     0 1px 2px rgba(15, 23, 42, 0.04),
     0 18px 48px rgba(15, 23, 42, 0.08);
   --font: "Inter", -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --level-good-a: rgba(167, 243, 208, 0.55);
-  --level-good-b: rgba(125, 211, 252, 0.35);
-  --level-ok-a: rgba(253, 230, 138, 0.55);
-  --level-ok-b: rgba(251, 191, 36, 0.22);
-  --level-meh-a: rgba(254, 215, 170, 0.60);
-  --level-meh-b: rgba(251, 146, 60, 0.24);
-  --level-bad-a: rgba(254, 202, 202, 0.60);
-  --level-bad-b: rgba(248, 113, 113, 0.28);
+  --level-good-a: rgba(167, 243, 208, 0.30);
+  --level-good-b: rgba(125, 211, 252, 0.15);
+  --level-ok-a:   rgba(253, 230, 138, 0.30);
+  --level-ok-b:   rgba(251, 191, 36, 0.10);
+  --level-meh-a:  rgba(254, 215, 170, 0.32);
+  --level-meh-b:  rgba(251, 146, 60, 0.12);
+  --level-bad-a:  rgba(254, 202, 202, 0.32);
+  --level-bad-b:  rgba(248, 113, 113, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -40,43 +40,21 @@ html, body {
 
 body {
   position: relative;
-  background: linear-gradient(180deg, #eef0f8 0%, #e4e8f3 100%);
+  background-color: #f6f7fb;
   overflow-x: hidden;
 }
 
-/* Slow-drifting ambient colour blobs behind everything — purple/blue palette. */
+/* Faint wavy-line pattern across the whole page (indigo, ~12% opacity). */
 body::before {
-  content: "";
-  position: fixed;
-  inset: -15%;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(closest-side at 85% 12%, rgba(165, 180, 252, 0.60), transparent 62%),   /* periwinkle */
-    radial-gradient(closest-side at 6% 80%,  rgba(125, 211, 252, 0.55), transparent 62%),   /* sky */
-    radial-gradient(closest-side at 55% 52%, rgba(196, 181, 253, 0.45), transparent 62%),   /* lavender */
-    radial-gradient(closest-side at 92% 88%, rgba(147, 197, 253, 0.48), transparent 62%),   /* soft blue */
-    radial-gradient(closest-side at 28% 18%, rgba(221, 214, 254, 0.40), transparent 62%);   /* pale violet */
-  filter: blur(38px);
-  animation: float-bg 34s ease-in-out infinite alternate;
-}
-
-/* Film-grain overlay — very subtle tactile texture. */
-body::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
-  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'><path d='M0 20 Q 20 8 40 20 T 80 20' stroke='%236366f1' stroke-width='0.8' fill='none' opacity='0.18'/></svg>");
+  background-size: 80px 40px;
+  background-repeat: repeat;
   mix-blend-mode: multiply;
-}
-
-@keyframes float-bg {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(-2%, 2%, 0) scale(1.05); }
-  100% { transform: translate3d(2%, -1.5%, 0) scale(1.02); }
 }
 
 .page {
@@ -196,16 +174,16 @@ body::after {
 .verdict-hero[data-level="meh"]::before  { background: radial-gradient(120% 90% at 18% 12%, rgba(255,255,255,0.55) 0%, transparent 55%), linear-gradient(135deg, var(--level-meh-a)  0%, var(--level-meh-b)  100%); }
 .verdict-hero[data-level="bad"]::before  { background: radial-gradient(120% 90% at 18% 12%, rgba(255,255,255,0.55) 0%, transparent 55%), linear-gradient(135deg, var(--level-bad-a)  0%, var(--level-bad-b)  100%); }
 
-/* Two soft aurora blobs that drift inside the hero, stronger for depth. */
+/* Big aurora orbs that fill most of the hero. */
 .verdict-hero::after {
   content: "";
   position: absolute;
-  inset: -30%;
+  inset: -15%;
   z-index: 0;
   background:
-    radial-gradient(closest-side at 22% 28%, var(--hero-blob-a) 0%, transparent 65%),
-    radial-gradient(closest-side at 82% 78%, var(--hero-blob-b) 0%, transparent 65%);
-  filter: blur(18px) saturate(160%);
+    radial-gradient(62% 72% at 22% 28%, var(--hero-blob-a) 0%, transparent 78%),
+    radial-gradient(62% 72% at 82% 78%, var(--hero-blob-b) 0%, transparent 78%);
+  filter: blur(22px) saturate(170%);
   pointer-events: none;
   animation: float-hero 22s ease-in-out infinite alternate;
 }
@@ -431,6 +409,5 @@ body[data-state="loading"] .score-num { opacity: 0.5; }
 
 @media (prefers-reduced-motion: reduce) {
   .verdict-hero::before,
-  .verdict-hero::after,
-  body::before { animation: none; transition: none; }
+  .verdict-hero::after { animation: none; transition: none; }
 }
