@@ -87,6 +87,95 @@ function currentTideState(times, heights, now = new Date()) {
   return { height: here, rising };
 }
 
+// ---------- Tide chart ----------
+// Renders an inline SVG sparkline of sea-level height over the next ~18 hours,
+// with a shaded area under the curve, an MSL reference line, a "now" marker,
+// and labelled next-high / next-low peaks.
+function renderTideChart(marine, tideEvents, now) {
+  const host = document.getElementById("tideChart");
+  const subEl = document.getElementById("tidePanelSub");
+  if (!host) return;
+
+  const times = marine.hourly.time.map(t => new Date(t));
+  const heights = marine.hourly.sea_level_height_msl;
+
+  const startMs = now.getTime() - 3 * 3600e3;
+  const endMs   = now.getTime() + 18 * 3600e3;
+
+  const pts = [];
+  for (let i = 0; i < times.length; i++) {
+    const t = times[i].getTime();
+    if (t >= startMs && t <= endMs) pts.push({ t, h: heights[i], time: times[i] });
+  }
+  if (pts.length < 2) { host.innerHTML = ""; return; }
+
+  const W = 720, H = 150, PAD_X = 28, PAD_T = 24, PAD_B = 28;
+
+  const hMin = Math.min(...pts.map(p => p.h), 0) - 0.25;
+  const hMax = Math.max(...pts.map(p => p.h), 0) + 0.25;
+
+  const xOf = t => PAD_X + ((t - startMs) / (endMs - startMs)) * (W - 2 * PAD_X);
+  const yOf = h => PAD_T + (1 - (h - hMin) / (hMax - hMin)) * (H - PAD_T - PAD_B);
+
+  const lineD = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${xOf(p.t).toFixed(1)} ${yOf(p.h).toFixed(1)}`).join(" ");
+  const baseY = yOf(hMin);
+  const areaD = `${lineD} L ${xOf(pts[pts.length-1].t).toFixed(1)} ${baseY.toFixed(1)} L ${xOf(pts[0].t).toFixed(1)} ${baseY.toFixed(1)} Z`;
+
+  const mslY = yOf(0);
+  const nowX = xOf(now.getTime());
+
+  // Hour-tick labels at 03/06/09/12/15/18/21/00 boundaries within the window.
+  const tickEls = [];
+  const firstTick = new Date(startMs);
+  firstTick.setMinutes(0, 0, 0);
+  firstTick.setHours(firstTick.getHours() + (3 - (firstTick.getHours() % 3)));
+  for (let t = firstTick.getTime(); t <= endMs; t += 3 * 3600e3) {
+    const x = xOf(t);
+    const label = new Date(t).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    tickEls.push(`<text x="${x.toFixed(1)}" y="${H - 8}" text-anchor="middle">${label}</text>`);
+    tickEls.push(`<line x1="${x.toFixed(1)}" y1="${(H - PAD_B).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(H - PAD_B + 3).toFixed(1)}" stroke="#cdd8e0" stroke-width="1"/>`);
+  }
+
+  // Next-high and next-low markers within the visible window.
+  const peakEls = [];
+  for (const ev of [tideEvents.nextHigh, tideEvents.nextLow]) {
+    if (!ev) continue;
+    const tms = ev.time.getTime();
+    if (tms < startMs || tms > endMs) continue;
+    const x = xOf(tms), y = yOf(ev.height);
+    const label = `${ev.kind === "high" ? "▲" : "▼"} ${fmtTime(ev.time)} · ${ev.height.toFixed(1)}m`;
+    const ty = ev.kind === "high" ? y - 8 : y + 16;
+    peakEls.push(`<circle class="tide-mark" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5"/>`);
+    peakEls.push(`<text class="peak" x="${x.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle">${label}</text>`);
+  }
+
+  host.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tide height over next 18 hours">
+      <line class="tide-msl" x1="${PAD_X}" y1="${mslY.toFixed(1)}" x2="${W - PAD_X}" y2="${mslY.toFixed(1)}"/>
+      <path class="tide-fill" d="${areaD}"/>
+      <path class="tide-line" d="${lineD}"/>
+      <line class="tide-now" x1="${nowX.toFixed(1)}" y1="${PAD_T - 4}" x2="${nowX.toFixed(1)}" y2="${(H - PAD_B).toFixed(1)}"/>
+      <text class="now" x="${nowX.toFixed(1)}" y="${(PAD_T - 8).toFixed(1)}" text-anchor="middle">now</text>
+      ${tickEls.join("")}
+      ${peakEls.join("")}
+    </svg>
+  `;
+
+  if (subEl) {
+    const hi = tideEvents.nextHigh, lo = tideEvents.nextLow;
+    if (hi && lo) {
+      const first = hi.time < lo.time ? hi : lo;
+      const second = first === hi ? lo : hi;
+      subEl.textContent = `${first.kind} ${fmtTime(first.time)} · ${second.kind} ${fmtTime(second.time)}`;
+    } else if (hi || lo) {
+      const ev = hi || lo;
+      subEl.textContent = `next ${ev.kind} ${fmtTime(ev.time)}`;
+    } else {
+      subEl.textContent = "";
+    }
+  }
+}
+
 // ---------- Busyness heuristic ----------
 // No crowd API — estimate from weekday, hour, weather, temp.
 // Cromer is a popular Norfolk seaside town; weekends + sun = crowded promenade.
@@ -262,6 +351,7 @@ function render({ wx, marine }) {
   document.getElementById("tideMeta").textContent = nextEvent
     ? `next ${nextEvent.kind} tide ${fmtTime(nextEvent.time)} (${fmtRel(nextEvent.time)})`
     : "tide data unavailable";
+  renderTideChart(marine, tideEvents, now);
 
   // Busyness card
   const busy = estimateBusyness({

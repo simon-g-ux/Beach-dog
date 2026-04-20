@@ -311,6 +311,49 @@ html, body {
 .card[data-tone="ok"]   { outline: 2px solid rgba(242, 184, 69, 0.3); }
 .card[data-tone="bad"]  { outline: 2px solid rgba(229, 105, 74, 0.35); }
 
+/* ---------- Tide panel ---------- */
+
+.tide-panel {
+  margin-top: 12px;
+  padding: 16px 18px 6px;
+  min-height: 0;
+}
+
+.tide-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tide-panel-sub {
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.tide-chart {
+  width: 100%;
+  line-height: 0;
+}
+
+.tide-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.tide-chart .tide-fill   { fill: var(--sea); fill-opacity: 0.25; }
+.tide-chart .tide-line   { stroke: var(--sea-deep); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.tide-chart .tide-msl    { stroke: #cdd8e0; stroke-width: 1; stroke-dasharray: 3 4; }
+.tide-chart .tide-now    { stroke: var(--bad); stroke-width: 1.8; stroke-dasharray: 4 3; }
+.tide-chart .tide-mark   { fill: var(--ink); }
+.tide-chart text         { font-family: var(--font); font-size: 11px; fill: var(--ink-soft); }
+.tide-chart text.now     { fill: var(--bad); font-weight: 800; }
+.tide-chart text.peak    { fill: var(--ink); font-weight: 800; }
+
 /* ---------- Footer ---------- */
 
 .foot {
